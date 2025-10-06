@@ -1,6 +1,6 @@
 # News Bias Aggregator
 
-**News Bias Aggregator** is a React web application designed to help users evaluate the bias in news articles. The app simulates bias and reliability scores from multiple unbiased sources, calculates an average score, and visually represents where the article falls on the bias spectrum.
+**News Bias Aggregator** is a React web application designed to help users evaluate the bias in news articles. The app simulates bias and reliability scores from multiple unbiased sources, calculates an average score, and visually represents where the article falls on the bias spectrum. Try it out: https://news-bias-aggregator.vercel.app/
 
 ## Features
 - Enter any news article URL or text snippet for bias analysis.
