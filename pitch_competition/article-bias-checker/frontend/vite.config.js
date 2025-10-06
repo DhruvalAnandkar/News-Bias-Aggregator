@@ -9,7 +9,7 @@ export default defineConfig({
     proxy: {
       // ✅ Works locally, ignored in production
       '/api': {
-        target: 'http://localhost:4000',
+        target: 'https://news-bias-aggregator.onrender.com',
         changeOrigin: true,
         secure: false,
       },
