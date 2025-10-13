@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 
 export default function ArticleForm({ onResults }) {
   const [url, setUrl] = useState('');
@@ -15,7 +17,12 @@ export default function ArticleForm({ onResults }) {
       const payload = {};
       if (url) payload.url = url;
       if (text) payload.text = text;
-      const res = await axios.post('/api/analyze', payload);
+      // 2. Construct the full URL for the API call
+      const fullUrl = `${API_BASE_URL}/api/analyze`;
+      
+      // 3. Use the full URL in the axios request
+      const res = await axios.post(fullUrl, payload);
+
       onResults(res.data);
     } catch (err) {
       setError(err.response?.data?.error || err.message);
