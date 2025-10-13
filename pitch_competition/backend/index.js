@@ -10,11 +10,11 @@ const app = express();
 
 // 1. Define allowed origins for CORS
 const allowedOrigins = [
-  // Your specific Vercel deployment URL (from the error)
+  // Your temporary Vercel deployment URL (from the error)
   'https://news-bias-aggregator-cgg7e6a6q-dhruvalanandkars-projects.vercel.app',
-  // Your main Vercel domain (if you set up a custom domain or alias)
+  // Your main Vercel domain/alias (if applicable)
   'https://news-bias-aggregator.vercel.app', 
-  // Local development ports (Vite default is usually 5173, 3000 is also common)
+  // Local development ports (Vite default is usually 5173, but include common ones)
   'http://localhost:5173',
   'http://localhost:3000' 
 ];
@@ -32,7 +32,7 @@ const corsOptions = {
       callback(new Error(`CORS policy blocks access from origin: ${origin}`), false);
     }
   },
-  methods: 'GET,POST', // Only allow the methods you use
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allow all necessary methods, including OPTIONS (preflight)
   credentials: true
 };
 
@@ -51,8 +51,6 @@ app.post('/api/analyze', async (req, res) => {
 
     // If user sent a URL but no text, fetch and extract <p> or <article> text
     if (!articleText && url) {
-      // NOTE: Axios requests from a server are generally less prone to CORS issues
-      // than browser requests, but some websites may still block automated fetching.
       const response = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
       const html = response.data;
       const $ = cheerio.load(html);
@@ -72,7 +70,6 @@ app.post('/api/analyze', async (req, res) => {
     }
 
     // Get ratings from mock sources
-    // Assuming getMockRatings is defined and imported correctly
     const ratings = await getMockRatings(articleText, url);
 
     // Calculate averages
