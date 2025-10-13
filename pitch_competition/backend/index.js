@@ -1,4 +1,3 @@
-// backend/index.js
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -6,7 +5,41 @@ const cheerio = require('cheerio');
 const { getMockRatings } = require('./mockData');
 
 const app = express();
-app.use(cors());
+
+// --- START FIXES FOR CORS AND DEPLOYMENT ---
+
+// 1. Define allowed origins for CORS
+const allowedOrigins = [
+  // Your specific Vercel deployment URL (from the error)
+  'https://news-bias-aggregator-cgg7e6a6q-dhruvalanandkars-projects.vercel.app',
+  // Your main Vercel domain (if you set up a custom domain or alias)
+  'https://news-bias-aggregator.vercel.app', 
+  // Local development ports (Vite default is usually 5173, 3000 is also common)
+  'http://localhost:5173',
+  'http://localhost:3000' 
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or local testing)
+    if (!origin) return callback(null, true); 
+    
+    // Check if the request origin is in the allowed list
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      // If the origin is not allowed, throw an error.
+      callback(new Error(`CORS policy blocks access from origin: ${origin}`), false);
+    }
+  },
+  methods: 'GET,POST', // Only allow the methods you use
+  credentials: true
+};
+
+// Apply the configured CORS middleware
+app.use(cors(corsOptions));
+// --- END CORS FIX ---
+
 app.use(express.json());
 
 // POST /api/analyze
@@ -18,6 +51,8 @@ app.post('/api/analyze', async (req, res) => {
 
     // If user sent a URL but no text, fetch and extract <p> or <article> text
     if (!articleText && url) {
+      // NOTE: Axios requests from a server are generally less prone to CORS issues
+      // than browser requests, but some websites may still block automated fetching.
       const response = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
       const html = response.data;
       const $ = cheerio.load(html);
@@ -37,6 +72,7 @@ app.post('/api/analyze', async (req, res) => {
     }
 
     // Get ratings from mock sources
+    // Assuming getMockRatings is defined and imported correctly
     const ratings = await getMockRatings(articleText, url);
 
     // Calculate averages
@@ -50,8 +86,8 @@ app.post('/api/analyze', async (req, res) => {
 
     res.json({ ratings, averageReliability, averageBias, grade });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error', details: err.message });
+    console.error('API Error:', err.message);
+    res.status(500).json({ error: 'Server error during analysis', details: err.message });
   }
 });
 
@@ -63,6 +99,6 @@ function gradeFromReliability(score) {
   return 'F (Unreliable)';
 }
 
-const PORT = 3000;
-app.listen(PORT, () => console.log(`Backend running: http://localhost:${PORT}`));
-// change Port
+// 2. Use the environment variable PORT provided by Render, or fallback to 3000 locally
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
