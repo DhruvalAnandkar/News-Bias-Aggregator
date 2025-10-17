@@ -11,7 +11,7 @@ const app = express();
 // 1. Define allowed origins for CORS
 const allowedOrigins = [
   // Your temporary Vercel deployment URL (from the error)
-  'news-bias-aggregator-cgg7e6a6q-dhruvalanandkars-projects.vercel.app',
+  'news-bias-aggregator-3o4yn674r-dhruvalanandkars-projects.vercel.app',
   // Your main Vercel domain/alias (if applicable)
   'news-bias-aggregator-git-main-dhruvalanandkars-projects.vercel.app', 
   // Local development ports (Vite default is usually 5173, but include common ones)
