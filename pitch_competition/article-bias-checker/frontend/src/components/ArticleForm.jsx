@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
+// --- FIX: Hardcoding the confirmed, live Render API URL ---
+const API_BASE_URL = 'https://news-bias-api.onrender.com';
+// --- End Fix ---
 
 
 export default function ArticleForm({ onResults }) {
@@ -17,7 +20,9 @@ export default function ArticleForm({ onResults }) {
       const payload = {};
       if (url) payload.url = url;
       if (text) payload.text = text;
+      
       // 2. Construct the full URL for the API call
+      // This now uses the hardcoded, correct Render URL
       const fullUrl = `${API_BASE_URL}/api/analyze`;
       
       // 3. Use the full URL in the axios request
@@ -25,7 +30,11 @@ export default function ArticleForm({ onResults }) {
 
       onResults(res.data);
     } catch (err) {
-      setError(err.response?.data?.error || err.message);
+      // Improved error message for debugging network issues
+      const errorMessage = err.response?.data?.error 
+                         || (err.code === 'ERR_NETWORK' ? 'Network Error: Cannot connect to API server.' : err.message);
+      setError(errorMessage);
+      console.error("API Call Failed:", err);
     } finally {
       setLoading(false);
     }
@@ -33,6 +42,10 @@ export default function ArticleForm({ onResults }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="text-sm text-gray-500 p-2 border border-blue-200 bg-blue-50 rounded-md">
+          <span className="font-semibold">API Target:</span> {API_BASE_URL}
+      </div>
+      
       <div>
         <label className="block text-sm font-medium text-gray-700">Article URL (optional)</label>
         <input
@@ -54,15 +67,16 @@ export default function ArticleForm({ onResults }) {
       </div>
 
       <div className="flex items-center gap-3">
-        <button disabled={loading} type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md disabled:opacity-50">
+        <button disabled={loading} type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md disabled:opacity-50 hover:bg-indigo-700 transition">
           {loading ? 'Analyzing...' : 'Analyze Article'}
         </button>
-        <button type="button" onClick={() => { setUrl(''); setText(''); onResults(null); }} className="px-3 py-2 border rounded-md">
+        <button type="button" onClick={() => { setUrl(''); setText(''); onResults(null); }} className="px-3 py-2 border rounded-md hover:bg-gray-50 transition">
           Reset
         </button>
       </div>
 
-      {error && <div className="text-red-600 mt-2">{error}</div>}
+      {error && <div className="text-red-600 mt-2 p-3 bg-red-50 border border-red-300 rounded-md">{error}</div>}
     </form>
   );
 }
+
